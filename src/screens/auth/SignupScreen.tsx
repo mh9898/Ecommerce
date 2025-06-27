@@ -9,41 +9,63 @@ import {AppColors} from '../../styles/colors';
 import {useNavigation} from '@react-navigation/native';
 import AppSafeView from '../../components/ views/AppSafeView';
 import {WIDTH} from '../../constants/constants';
+import AppTextInputController from '../../components/textInputs/AppTextInputController';
+import {useForm} from 'react-hook-form';
+import {object, string} from 'yup';
+import {yupResolver} from '@hookform/resolvers/yup';
+
+interface SignupForm {
+  userName: string;
+  email: string;
+  password: string;
+}
+
+let userSchema = object({
+  userName: string().required('User name is required'),
+  email: string().required('Email is required').email('Email is not valid'),
+  password: string()
+    .required('Password is required')
+    .min(8, 'Password must be at least 8 characters'),
+}).required();
 
 const SignupScreen = () => {
-  const [email, setEmail] = useState<string>();
-  const [password, setPassword] = useState('');
-  const [userName, setUserName] = useState('');
-  const navigation = useNavigation();
+  const {control, handleSubmit} = useForm<SignupForm>({
+    resolver: yupResolver(userSchema),
+  });
+
+  const navigation = useNavigation<any>();
+
+  const signupForm = (formData: SignupForm) => {
+    console.log(formData);
+    navigation.navigate('MainBottomNavigation');
+  };
+
   return (
     <AppSafeView>
       <View style={styles.container}>
         <Image style={{width: WIDTH, height: 150}} source={IMAGES.appLogo} />
 
-        <AppTextInput
-          value={email}
-          onChangeText={setUserName}
+        <AppTextInputController
+          control={control}
+          name={'userName'}
           placeholder={'User name'}
+          rules={{required: 'User name is required'}}
         />
-
-        <AppTextInput
-          value={email}
-          onChangeText={setEmail}
+        <AppTextInputController
+          control={control}
+          name={'email'}
           placeholder={'Email'}
+          rules={{required: 'Email is required'}}
         />
-        <AppTextInput
-          value={password}
-          onChangeText={text => setPassword(text)}
+        <AppTextInputController
+          control={control}
+          name={'password'}
           placeholder={'Password'}
-          // secureTextEntry={true}
+          rules={{required: 'Password is required'}}
+          secureTextEntry={true}
         />
         <AppText>SignupScreen</AppText>
-        <AppButton
-          title={'Create a new account'}
-          onPress={() => {
-            console.log('pressed on Login');
-          }}
-        />
+        <AppButton title={'Sign Up'} onPress={handleSubmit(signupForm)} />
         <AppButton
           backgroundColor={AppColors.white}
           title={'Go To to Sign In'}
